@@ -176,10 +176,10 @@ def enrich(datas, conceptnet):
                         choice['surface'] = ''
                         choice['weight'] = 0.0
                         index_j += 1
-cases.append(data)
-# 1348, 247
-print("index is {}, {}".format(index_i, index_j))
-    return cases
+    cases.append(data)
+    # 1348, 247
+    print("index is {}, {}".format(index_i, index_j))
+        return cases
 
 
 def check_entity(datas, conceptnet):
