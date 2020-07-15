@@ -1,0 +1,1 @@
+python ../plugins/apex-master/setup.py install --user
