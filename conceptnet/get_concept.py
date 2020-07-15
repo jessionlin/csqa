@@ -2,30 +2,19 @@ import os
 from common import load_jsonl, save_json, conceptnet_dir, root_dirs, csqa_data_dirs, mkdir_if_notexist
 from rearrange_conceptnet import load_rearranged_conceptnet
 
-target_relations = [
-    'AtLocation',
-    'Causes',
-    'CapableOf',
-    'Antonym',
-    'HasPrerequisite',
-    'CausesDesire',
-    'Desires',
-    'PartOf',
-    'HasProperty'
-]
 
-# target_relations = [
-#     'CausesDesire',
-#     'HasProperty',
-#     'CapableOf',
-#     'PartOf',
-#     'AtLocation',
-#     'Desires',
-#     'HasPrerequisite',
-#     'HasSubevent',
-#     'Antonym',
-#     'Causes'
-# ]
+target_relations = [
+                    'CausesDesire',
+                    'HasProperty',
+                    'CapableOf',
+                    'PartOf',
+                    'AtLocation',
+                    'Desires',
+                    'HasPrerequisite',
+                    'HasSubevent',
+                    'Antonym',
+                    'Causes'
+                    ]
 
 def enrich_word(word, conceptnet):
     try:
@@ -36,37 +25,37 @@ def enrich_word(word, conceptnet):
     for edge in edges:
         if edge['rel'] not in target_relations:
             continue
-
+        
         if edge['weight'] < 1 :
             continue
 
         start_splited = edge['start'].split('/')
 
-        if len(start_splited) >= 5:
-
-            start = start_splited[3]
-
-            end = edge['end'].split('/')[3]
-            if len(end) < 1:
-                continue
-
+if len(start_splited) >= 5:
+    
+    start = start_splited[3]
+    
+    end = edge['end'].split('/')[3]
+        if len(end) < 1:
+            continue
+        
         else:
             start = start_splited[-1]
             end = edge['end'].split('/')[-1]
 
-        try:
-            triple = {
-                    'start': start.replace('_',' '),
-                    'rel': edge['rel'],
-                    'end': end.replace('_',' '),
-                    'surface_text':edge['surface_text'],
-                    'weight': edge['weight']
-                }
+    try:
+        triple = {
+            'start': start.replace('_',' '),
+            'rel': edge['rel'],
+            'end': end.replace('_',' '),
+            'surface_text':edge['surface_text'],
+            'weight': edge['weight']
+            }
             triples.append(triple)
         except:
             break
 
-    return triples
+return triples
 
 
 def triples_filter(triples):
@@ -89,10 +78,8 @@ def triples_score(triples):
     scores_dict = {}
     for key in list(rel_dict.keys()):
         scores_dict[key] = 1.0 / len(rel_dict[key])
-
+    
     filtered_rel = sorted(triples, key=lambda x: x['weight'] * scores_dict[x['rel']], reverse=True)
-    # filtered_rel = sorted(triples, key=lambda x: x['weight'] * (target_relations.index(x['rel']) + 1), reverse=True)
-    # print(target_relations.index(triples[0]['rel']))
     return filtered_rel
 
 def enrich_rel(datas, conceptnet, rel=None):
@@ -100,21 +87,7 @@ def enrich_rel(datas, conceptnet, rel=None):
     index_i, index_j = 0, 0
     for i, data in enumerate(datas) :
         data['initial_id'] = i
-        # index_i += 1
-        # triples = enrich_word(data['question']['question_concept'], conceptnet)
-        # triples_rel = []
-        # for triple in triples:
-        #     if rel != None and triple['rel'] == rel:
-        #         triples_rel.append(triple)
-        #     elif rel == None and  triple['rel'] in target_relations:
-        #         triples_rel.append(triple)
-        # triples = triples_rel
-        # if len(triples) > 0:
-        #     data['question']['triple'] = [[triples[0]['start'], triples[0]['rel'], triples[0]['end']]]
-        # else:
-        #     data['question']['triple'] = []
-        #     index_j += 1
-
+        
         for choice in data['question']['choices']:
             triples = enrich_word(choice['text'], conceptnet)
             triples = triples_score(triples)
@@ -142,10 +115,10 @@ def enrich_rel(datas, conceptnet, rel=None):
                     choice['triple'] = []
                     choice['surface'] = ''
                     choice['weight'] = 0.0
-                    # index_j += 1
-        cases.append(data)
-    # 1348, 247
-    print("index is {}, {}".format(index_i, index_j))
+        # index_j += 1
+    cases.append(data)
+# 1348, 247
+print("index is {}, {}".format(index_i, index_j))
     return cases
 
 
@@ -156,18 +129,18 @@ def enrich(datas, conceptnet):
         data['initial_id'] = i
         triples = enrich_word(data['question']['question_concept'], conceptnet)
         objects = {triple['end']:triple for triple in triples}
-
+        
         for choice in data['question']['choices']:
             try:
                 '''
-                objects[choice['text']] = {
+                    objects[choice['text']] = {
                     'start': start.replace('_',' '),
                     'rel': edge['rel'],
                     'end': end.replace('_',' '),
                     'surface_text':edge['surface_text'],
                     'weight' : edgge['weight']
-                }
-                '''
+                    }
+                    '''
                 triple = objects[choice['text']]
                 choice['triple'] = [[triple['start'], triple['rel'], triple['end']]]
                 choice['surface'] = triple['surface_text']
@@ -190,9 +163,9 @@ def enrich(datas, conceptnet):
                     # scores_dict = {}
                     # for key in list(rel_dict.keys()):
                     #     scores_dict[key] = 1.0 / len(rel_dict[key])
-
-                    # filtered_rel = sorted(triples, key=lambda x:x['weight'] * scores_dict[x['rel']], reverse=True)
-                    filtered_rel = sorted(triples, key=lambda x:x['weight'] * (target_relations.index(x['rel']) + 1), reverse=True)
+                    
+                    filtered_rel = sorted(triples, key=lambda x:x['weight'] * scores_dict[x['rel']], reverse=True)
+                    # filtered_rel = sorted(triples, key=lambda x:x['weight'] * (target_relations.index(x['rel']) + 1), reverse=True)
                     print(filtered_rel)
                     try:
                         triple = filtered_rel[0]
@@ -204,9 +177,9 @@ def enrich(datas, conceptnet):
                         choice['surface'] = ''
                         choice['weight'] = 0.0
                         index_j += 1
-        cases.append(data)
-    # 1348, 247
-    print("index is {}, {}".format(index_i, index_j))
+cases.append(data)
+# 1348, 247
+print("index is {}, {}".format(index_i, index_j))
     return cases
 
 
@@ -226,35 +199,35 @@ if __name__ == '__main__':
     task = 'test'
     # train_file_name = './data/conceptnet/taskA/taskA_{}.json'.format(task)
     data_file = os.path.join(csqa_data_dirs, '{}_data.jsonl'.format(task))
-
+    
     # rel = 'AtLocation'
     output_data_file_name = os.path.join(root_dirs, 'csqa_data', 'conceptnet','9_rels', '{}_data.json'.format(task))
     mkdir_if_notexist(output_data_file_name)
     # wnlemer = WordNetLemmatizer()
-
+    
     datas = load_jsonl(data_file)
     print('loading conceptnet ...')
     conceptnet = load_rearranged_conceptnet(conceptnet_dir)
     print(f'conceptnet keys: {len(conceptnet)}')
     print('-----/n')
-
-
-    cases = enrich_rel(datas, conceptnet, rel=None)
+    
+    
+    cases = enrich(datas, conceptnet)
     print(len(cases))
     #
     save_json(cases, output_data_file_name)
 
-    # for rel in target_relations:
-    # # rel = 'AtLocation'
-    #     print("rel is {}".format(rel))
-    #     output_data_file_name = os.path.join(root_dirs, 'csqa_data', 'conceptnet', rel, '{}_data.json'.format(task))
-    #     mkdir_if_notexist(output_data_file_name)
-    #     cases = enrich_rel(datas, conceptnet,rel=rel)
-    #
-    #     print(len(cases))
-    #     #
-    #     save_json(cases, output_data_file_name)
-    # print(check_entity(datas, conceptnet))
+# for rel in target_relations:
+# # rel = 'AtLocation'
+#     print("rel is {}".format(rel))
+#     output_data_file_name = os.path.join(root_dirs, 'csqa_data', 'conceptnet', rel, '{}_data.json'.format(task))
+#     mkdir_if_notexist(output_data_file_name)
+#     cases = enrich_rel(datas, conceptnet,rel=rel)
+#
+#     print(len(cases))
+#     #
+#     save_json(cases, output_data_file_name)
+# print(check_entity(datas, conceptnet))
 
 # dev_data
 # AtLocation 没有找到三元组的比例：4489/7326
@@ -292,3 +265,4 @@ if __name__ == '__main__':
 # Desires 6615/6840
 # PartOf 5448/6840
 # HasProperty 5018/6840
+
