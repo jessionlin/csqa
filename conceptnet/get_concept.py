@@ -154,18 +154,17 @@ def enrich(datas, conceptnet):
                     choice['weight'] = 0.0
                     index_j += 1
                 else:
-                    # rel_dict = {}
-                    # for triple in triples:
-                    #     try:
-                    #         rel_dict[triple['rel']].append(triple)
-                    #     except:
-                    #         rel_dict[triple['rel']] = [triple]
-                    # scores_dict = {}
-                    # for key in list(rel_dict.keys()):
-                    #     scores_dict[key] = 1.0 / len(rel_dict[key])
+                     rel_dict = {}
+                     for triple in triples:
+                         try:
+                             rel_dict[triple['rel']].append(triple)
+                         except:
+                             rel_dict[triple['rel']] = [triple]
+                     scores_dict = {}
+                     for key in list(rel_dict.keys()):
+                         scores_dict[key] = 1.0 / len(rel_dict[key])
                     
                     filtered_rel = sorted(triples, key=lambda x:x['weight'] * scores_dict[x['rel']], reverse=True)
-                    # filtered_rel = sorted(triples, key=lambda x:x['weight'] * (target_relations.index(x['rel']) + 1), reverse=True)
                     print(filtered_rel)
                     try:
                         triple = filtered_rel[0]
@@ -197,7 +196,6 @@ def check_entity(datas, conceptnet):
 
 if __name__ == '__main__':
     task = 'test'
-    # train_file_name = './data/conceptnet/taskA/taskA_{}.json'.format(task)
     data_file = os.path.join(csqa_data_dirs, '{}_data.jsonl'.format(task))
     
     # rel = 'AtLocation'
@@ -214,20 +212,7 @@ if __name__ == '__main__':
     
     cases = enrich(datas, conceptnet)
     print(len(cases))
-    #
     save_json(cases, output_data_file_name)
-
-# for rel in target_relations:
-# # rel = 'AtLocation'
-#     print("rel is {}".format(rel))
-#     output_data_file_name = os.path.join(root_dirs, 'csqa_data', 'conceptnet', rel, '{}_data.json'.format(task))
-#     mkdir_if_notexist(output_data_file_name)
-#     cases = enrich_rel(datas, conceptnet,rel=rel)
-#
-#     print(len(cases))
-#     #
-#     save_json(cases, output_data_file_name)
-# print(check_entity(datas, conceptnet))
 
 # dev_data
 # AtLocation 没有找到三元组的比例：4489/7326
